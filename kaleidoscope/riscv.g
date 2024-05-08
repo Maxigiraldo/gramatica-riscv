@@ -1,9 +1,8 @@
 start: program;
 
 program:
-  inst;
+  inst+;
  
-
 inst: 
     instr  regname ',' regname ',' regname // R instruction
   | insti  regname ',' regname ',' imm     // I instruction
@@ -29,7 +28,6 @@ instu: 'lui' | 'auipc';
 imm : VAL;
 
 VAL: '[0]|(\-|\+)?[1-9][0-9]*';
-
 
 regname: 
    'x0' | 
@@ -66,6 +64,5 @@ regname:
   | 'x31' | 't6'
 ;
 
-
-COMMENT: '[\;\#]' '.*?' (%ignore);
+COMMENT: '[;#].*?\n' (%ignore);
 WS: '[ \t\r\n]+' (%ignore);
