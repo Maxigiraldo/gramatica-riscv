@@ -1,8 +1,10 @@
 start: program;
 
 program:
-  inst+;
- 
+  (label inst*)*;
+
+label: '[a-zA-Z_][\w_]*:';
+
 inst: 
     instr  regname ',' regname ',' regname // R instruction
   | insti  regname ',' regname ',' imm     // I instruction
@@ -64,5 +66,5 @@ regname:
   | 'x31' | 't6'
 ;
 
-COMMENT: '[;#].*?\n' (%ignore);
+COMMENT: '[;#][^\n\r]*' (%ignore);
 WS: '[ \t\r\n]+' (%ignore);
