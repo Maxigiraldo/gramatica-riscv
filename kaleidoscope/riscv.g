@@ -6,8 +6,8 @@ program:
 label: '[a-zA-Z_][\w_]*:';
 
 inst: 
-    instr  regname ',' regname ',' regname // R instruction
-  | insti  regname ',' regname ',' imm     // I instruction
+    instr regname ',' regname ',' regname // R instruction
+  | insti regname ',' regname ',' imm     // I instruction
   | instil regname ',' offset // IL instruction
   | insts regname ',' offset ',' regname // S instruction
   | instb regname ',' regname ',' imm // B instruction
@@ -17,7 +17,7 @@ inst:
 
 offset: imm '\(' regname '\)';
 
-instname: instr | insti;
+instname: instr | insti | instil | insts | instb | instj | instu;
 
 instr: 'add' | 'sub' | 'xor' | 'or' | 'and' | 'sll' | 'srl' | 'sra' | 'slt' | 'sltu' | 'mul' | 'mulh' | 'mulsu' | 'mulu' | 'div' | 'divu' | 'rem' | 'remu';
 insti: 'addi' | 'xori' | 'ori' | 'andi' | 'slli' | 'srli' | 'srai' | 'slti' | 'sltiu' | 'jalr' | 'ecall' | 'ebreak';
