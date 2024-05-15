@@ -283,6 +283,7 @@ class HVisitor(plyplus.STransformer):
     super().__init__()
     self.instructionCounter = 0
     self.labels = {}
+    self.binary_instructions = []
 
   def label(self, expr):
     self.labels[expr.tail[0]] = self.instructionCounter + 4
@@ -401,58 +402,67 @@ class HVisitor(plyplus.STransformer):
       rd = expr.tail[1]['encode']
       rs1 = expr.tail[2]['encode']
       rs2 = expr.tail[3]['encode']
-      self.instructionCounter += 4
       print("EncodeR", name, opcode, rd, rs1, rs2, funct3, funct7)
+      bin_inst = funct7 + rs2 + rs1 + funct3 + rd + opcode
+      self.binary_instructions.append(bin_inst)
     elif typ == "I":
       funct3 = instInfo['f3']
       rd = expr.tail[1]['encode']
       rs1 = expr.tail[2]['encode']
       imm = format(expr.tail[3]['value'], '012b')
-      self.instructionCounter += 4
       print("EncodeI", name, opcode, rd, rs1, imm, funct3)
+      bin_inst = imm + rs1 + funct3 + rd + opcode
+      self.binary_instructions.append(bin_inst)
     elif typ == "IL":
       funct3 = instInfo['f3']
       rd = expr.tail[1]['encode']
       offset = expr.tail[2]
       imm = offset['encode']
       rs1 = offset['reg']
-      self.instructionCounter += 4
       print("EncodeIL", name, opcode, rd, rs1, imm, funct3)
+      bin_inst = imm + rs1 + funct3 + rd + opcode
+      self.binary_instructions.append(bin_inst)
     elif typ == "IS":
       funct3 = instInfo['f3']
       funct7 = instInfo['f7']
       rd = expr.tail[1]['encode']
       rs1 = expr.tail[2]['encode']
       imm = format(expr.tail[3]['value'], '012b')
-      self.instructionCounter += 4
       print("EncodeIS", name, opcode, rd, rs1, imm, funct3, funct7)
+      bin_inst = imm[:7] + rs1 + rd + funct3 + imm[7:] + funct7 + opcode
+      self.binary_instructions.append(bin_inst)
     elif typ == "S":
       rs2 = expr.tail[1]['encode']
       offset = expr.tail[2]
       imm = offset['encode']
       rs1 = offset['reg']
       funct3 = instInfo['f3']
-      self.instructionCounter += 4
       print("EncodeS", name, opcode, rs1, rs2, imm, funct3)
+      bin_inst = imm[:7] + rs2 + rs1 + funct3 + imm[7:] + opcode
+      self.binary_instructions.append(bin_inst)
     elif typ == "B":
       offset = expr.tail[3]
       imm = offset['encode']
       funct3 = instInfo['f3']
       rs1 = expr.tail[1]['encode']
       rs2 = expr.tail[2]['encode']
-      self.instructionCounter += 4
       print("EncodeB", name, opcode, rs1, rs2, imm, funct3)
+      bin_inst = imm[0] + imm[2:8] + rs2 + rs1 + funct3 + imm[8:] + imm[1] + opcode
+      self.binary_instructions.append(bin_inst)
     elif typ == "U":
       rd = expr.tail[1]['encode']
       imm = format(expr.tail[2]['value'], '020b')
-      self.instructionCounter += 4
       print("EncodeU", name, opcode, rd, imm)
+      bin_inst = imm + rd + opcode
+      self.binary_instructions.append(bin_inst)
     elif typ == "J":
       rd = expr.tail[1]['encode']
       offset = expr.tail[2]
       imm = offset['encode']
-      self.instructionCounter += 4
       print("EncodeJ", name, opcode, rd, imm)
+      bin_inst = imm[0] + imm[10:] + imm[9] + imm[1:9] + rd + opcode
+      self.binary_instructions.append(bin_inst)
+    self.instructionCounter += 4
     #print("-{}--".format(self.instructionCounter))
         
     #print("opcode({})-rd({})-f3({})-rs1({})-rs2({})-f7({})".format(expr.tail[0]['opcode'], expr.tail[1],expr.tail[0]['f3'] ,expr.tail[2],expr.tail[3],expr.tail[0]['f7']))
@@ -460,11 +470,12 @@ class HVisitor(plyplus.STransformer):
     
 
 if __name__ == '__main__':
-  if len(sys.argv) != 3:
+  if len(sys.argv) != 4:
     print("Example call: {} input.asm output.asm".format(sys.argv[0]))
   else:
     sourceFile = sys.argv[1]
     targetFile = sys.argv[2]
+    targetFile2 = sys.argv[3]
     with open('riscv.g', 'r') as grm:
       with open(sourceFile, 'r') as scode:
         parser = plyplus.Grammar(grm)
@@ -473,4 +484,11 @@ if __name__ == '__main__':
         #t.to_png_with_pydot(r"tree.png")
         v = HVisitor()
         v.transform(t)
+        with open(targetFile, 'w') as target:
+          for inst in v.binary_instructions:
+            target.write(inst + "\n")
+        with open(targetFile2, 'w') as tarjet2:
+          for inst in v.binary_instructions:
+            hex_inst = format(int(inst, 2), '08x')
+            tarjet2.write(hex_inst + "\n")
         print(v.labels)
