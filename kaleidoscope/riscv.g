@@ -3,25 +3,27 @@ start: program;
 program:
   (label inst*)*;
 
-label: '[a-zA-Z_][\w_]*:';
+label: '[a-zA-Z_][\w_]*:' ;
 
 inst: 
     instr regname ',' regname ',' regname // R instruction
   | insti regname ',' regname ',' imm     // I instruction
   | instil regname ',' offset // IL instruction
-  | insts regname ',' offset ',' regname // S instruction
-  | instb regname ',' regname ',' imm // B instruction
-  | instj imm // J instruction
+  | instis regname ',' regname ',' imm // IS instruction
+  | insts regname ',' offset  // S instruction
+  | instb regname ',' regname ',' offset // B instruction
+  | instj regname ',' offset // J instruction
   | instu regname ',' imm // U instruction
   ;
 
 offset: imm '\(' regname '\)';
 
-instname: instr | insti | instil | insts | instb | instj | instu;
+instname: instr | insti | instil | instis | insts | instb | instj | instu;
 
 instr: 'add' | 'sub' | 'xor' | 'or' | 'and' | 'sll' | 'srl' | 'sra' | 'slt' | 'sltu' | 'mul' | 'mulh' | 'mulsu' | 'mulu' | 'div' | 'divu' | 'rem' | 'remu';
-insti: 'addi' | 'xori' | 'ori' | 'andi' | 'slli' | 'srli' | 'srai' | 'slti' | 'sltiu' | 'jalr' | 'ecall' | 'ebreak';
+insti: 'addi' | 'xori' | 'ori' | 'andi' | 'slti' | 'sltiu' | 'jalr' | 'ecall' | 'ebreak';
 instil: 'lw' | 'lh' | 'lb' | 'lbu' | 'lhu';
+instis: 'slli' | 'srli' | 'srai';
 insts: 'sw' | 'sh' | 'sb';
 instb: 'beq' | 'bne' | 'blt' | 'bge' | 'bltu' | 'bgeu';
 instj: 'jal';
@@ -32,7 +34,7 @@ imm : VAL;
 VAL: '[0]|(\-|\+)?[1-9][0-9]*';
 
 regname: 
-   'x0' | 
+   'x0' | 'zero'
   | 'x1' | 'ra'
   | 'x2' | 'sp'
   | 'x3' | 'gp'
